@@ -3,7 +3,7 @@ colors:
   normal:
     black: '0x181818'
     blue: '0x4588c0'
-    cyan: '0x85e4f2'
+    cyan: '0x8bcee7'
     green: '0x77d967'
     magenta: '0xc15dbd'
     red: '0xdd5c5c'
@@ -11,13 +11,13 @@ colors:
     yellow: '0xfee149'
   bright:
     black: '0x181818'
-    blue: '0x45e3fa'
-    cyan: '0x46b5ff'
-    green: '0x6df457'
-    magenta: '0x6df457'
-    red: '0xf34f4f'
+    blue: '0x4588c0'
+    cyan: '0x8bcee7'
+    green: '0x77d967'
+    magenta: '0xc17dbd'
+    red: '0xdd5c5c'
     white: '0xf1ffff'
-    yellow: '0xffcb00'
+    yellow: '0xfee149'
 
   primary:
     background: '0x181818'
