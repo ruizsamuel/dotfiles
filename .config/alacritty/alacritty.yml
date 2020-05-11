@@ -1,0 +1,37 @@
+background_opacity: 0.65
+colors:
+  normal:
+    black: '0x181818'
+    blue: '0x4588c0'
+    cyan: '0x85e4f2'
+    green: '0x77d967'
+    magenta: '0xc15dbd'
+    red: '0xdd5c5c'
+    white: '0xf1ffff'
+    yellow: '0xfee149'
+  bright:
+    black: '0x181818'
+    blue: '0x45e3fa'
+    cyan: '0x46b5ff'
+    green: '0x6df457'
+    magenta: '0x6df457'
+    red: '0xf34f4f'
+    white: '0xf1ffff'
+    yellow: '0xffcb00'
+
+  primary:
+    background: '0x181818'
+    foreground: '0xffffff'
+font:
+  bold:
+    family: Menlo
+  italic:
+    family: Menlo
+  normal:
+    family: Menlo
+    style: Regular
+  size: 9
+window:
+  padding:
+    x: 5
+    y: 5
