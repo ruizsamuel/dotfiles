@@ -35,6 +35,9 @@ set shiftwidth=8
 " Auto Open NerdTree
 autocmd vimenter * NERDTree
 
+" Auto Open VimCompletesMe
+autocmd FileType vim let b:vcm_tab_complete = 'vim'
+
 " Colorscheme configuration.
 if &t_Co > 2
 	syntax on
