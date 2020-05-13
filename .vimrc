@@ -28,9 +28,9 @@ set hidden
 
 "filetype plugin indent on
 " show existing tab with 4 spaces width
-set tabstop=4
+set tabstop=8
 " when indenting with '>', use 4 spaces width
-set shiftwidth=4
+set shiftwidth=8
 
 " Auto Open NerdTree
 autocmd vimenter * NERDTree
@@ -38,17 +38,10 @@ autocmd vimenter * NERDTree
 " Colorscheme configuration.
 if &t_Co > 2
 	syntax on
-	silent! colorscheme dim
+	silent! colorscheme pablo
 	set background=dark
 
-	highlight Folded cterm=reverse ctermbg=0 ctermfg=8
-	highlight VertSplit cterm=NONE ctermbg=NONE ctermfg=8
-	highlight Conceal cterm=NONE ctermbg=NONE ctermfg=8
-	highlight LineNr ctermfg=cyan
-
-	highlight DiffAdd ctermfg=magenta cterm=bold
-	highlight DiffDelete ctermfg=red cterm=bold
-	highlight DiffChange ctermfg=yellow
+	highlight Comment ctermfg=blue
 
 	set colorcolumn=80
 endif
