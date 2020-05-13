@@ -15,6 +15,9 @@ set nobackup                " don't backup, use git!
 
 " Relative line numbers
 
+
+packloadall
+
 set number relativenumber
 set nu rnu
 
