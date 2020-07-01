@@ -1,4 +1,4 @@
-background_opacity: 0.65
+background_opacity: 0.95
 colors:
   normal:
     black: '0x181818'
@@ -20,17 +20,17 @@ colors:
     yellow: '0xfee149'
 
   primary:
-    background: '0x181818'
+    background: '0x2d2d2d'
     foreground: '0xffffff'
 font:
   bold:
-    family: Menlo
+    family: Hack
   italic:
-    family: Menlo
+    family: Hack
   normal:
-    family: Menlo
+    family: Hack
     style: Regular
-  size: 9
+  size: 14
 window:
   padding:
     x: 5
