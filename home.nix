@@ -65,11 +65,11 @@
 
         signing = {
             key = "6B50E0FDEA729EB7";
-            signByDefault = true;  # Firmar commits automáticamente
+            signByDefault = true;
         };
 
         extraConfig = {
-            gpg.program = "gpg";   # Asegura que Git use gpg moderno
+            gpg.program = "gpg";
         };
     };
 
