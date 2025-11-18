@@ -26,6 +26,7 @@
         unzip
         gnupg
         pinentry-curses
+        openssh
     ];
 
     programs.zsh = {
