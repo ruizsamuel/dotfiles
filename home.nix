@@ -57,6 +57,22 @@
         settings = builtins.fromTOML (builtins.readFile ./dotfiles/starship.toml);
     };
 
+    programs.git = {
+        enable = true;
+
+        userName = "Samuel Ruiz";
+        userEmail = "samue@ruizsamuel.es";
+
+        signing = {
+            key = "6B50E0FDEA729EB7";
+            signByDefault = true;  # Firmar commits automáticamente
+        };
+
+        extraConfig = {
+            gpg.program = "gpg";   # Asegura que Git use gpg moderno
+        };
+    };
+
     services.gpg-agent = {
         enable = true;
         pinentryPackage = pkgs.pinentry-curses;
