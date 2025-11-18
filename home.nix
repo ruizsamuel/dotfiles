@@ -16,11 +16,16 @@
         docker-compose
         git
         gcc
+        cmake
+        gnumake
         ripgrep
         python3
         python3.pkgs.pip
         python3.pkgs.python-lsp-server
         ruff
+        unzip
+        gnupg
+        pinentry-curses
     ];
 
     programs.zsh = {
@@ -52,11 +57,16 @@
         settings = builtins.fromTOML (builtins.readFile ./dotfiles/starship.toml);
     };
 
+    services.gpg-agent = {
+        enable = true;
+        pinentryPackage = pkgs.pinentry-curses;
+    };
+
     home.activation.restartTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if command -v tmux >/dev/null; then
       tmux kill-server 2>/dev/null || true
     fi
-  '';
+    '';
 
     programs.home-manager.enable = true;
 }

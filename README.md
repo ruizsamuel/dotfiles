@@ -39,5 +39,5 @@ cd dotfiles
 Apply the configuration using Home Manager:
 
 ```bash
-home-manager switch --flake .
+nix run github:nix-community/home-manager -- switch --flake .
 ```
