@@ -31,7 +31,10 @@
 
     programs.zsh = {
         enable = true;
-        initContent = builtins.readFile ./dotfiles/zshrc;
+        initContent = ''
+        ${builtins.readFile ./dotfiles/zshrc}
+        ${builtins.readFile ./dotfiles/zshrc_extra}
+        '';
     };
 
     programs.tmux = {
