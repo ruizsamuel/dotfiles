@@ -27,6 +27,8 @@
         gnupg
         pinentry-curses
         openssh
+        nodePackages.typescript-language-server
+        nodePackages.typescript
     ];
 
     programs.zsh = {
@@ -69,7 +71,7 @@
 
         signing = {
             key = "6B50E0FDEA729EB7";
-            signByDefault = true;
+            signByDefault = false;
         };
 
         extraConfig = {
