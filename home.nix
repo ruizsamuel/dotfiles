@@ -32,6 +32,7 @@
     ];
 
     programs.zsh = {
+        syntaxHighlighting.enable = true;
         enable = true;
         initContent = ''
         ${builtins.readFile ./dotfiles/zshrc}

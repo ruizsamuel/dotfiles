@@ -2,3 +2,43 @@ USE_POWERLINE="true"
 HAS_WIDECHARS="false"
 
 export GPG_TTY=$(tty)
+
+export LS_COLORS="di=1;34:ln=1;36:so=1;35:pi=33:ex=1;32:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43:*.tar=1;31:*.tgz=1;31:*.arc=1;31:*.arj=1;31:*.taz=1;31:*.lha=1;31:*.lz4=1;31:*.lzh=1;31:*.lzma=1;31:*.tlz=1;31:*.txz=1;31:*.tzo=1;31:*.t7z=1;31:*.zip=1;31:*.z=1;31:*.dz=1;31:*.gz=1;31:*.lrz=1;31:*.lz=1;31:*.lzo=1;31:*.xz=1;31:*.zst=1;31:*.tzst=1;31:*.bz2=1;31:*.bz=1;31:*.tbz=1;31:*.tbz2=1;31:*.tz=1;31:*.deb=1;31:*.rpm=1;31:*.jar=1;31:*.war=1;31:*.ear=1;31:*.sar=1;31:*.rar=1;31:*.alz=1;31:*.ace=1;31:*.zoo=1;31:*.cpio=1;31:*.7z=1;31:*.rz=1;31:*.cab=1;31:*.jpg=1;35:*.jpeg=1;35:*.mjpg=1;35:*.mjpeg=1;35:*.gif=1;35:*.bmp=1;35:*.pbm=1;35:*.pgm=1;35:*.ppm=1;35:*.tga=1;35:*.xbm=1;35:*.xpm=1;35:*.tif=1;35:*.tiff=1;35:*.png=1;35:*.svg=1;35:*.svgz=1;35:*.mng=1;35:*.pcx=1;35:*.mov=1;35:*.mpg=1;35:*.mpeg=1;35:*.m2v=1;35:*.mkv=1;35:*.webm=1;35:*.ogm=1;35:*.mp4=1;35:*.m4v=1;35:*.mp4v=1;35:*.vob=1;35:*.qt=1;35:*.nuv=1;35:*.wmv=1;35:*.asf=1;35:*.rm=1;35:*.rmvb=1;35:*.flc=1;35:*.avi=1;35:*.fli=1;35:*.flv=1;35:*.gl=1;35:*.dl=1;35:*.xcf=1;35:*.xwd=1;35:*.yuv=1;35:*.cgm=1;35:*.emf=1;35:*.ogv=1;35:*.ogx=1;35:*.aac=1;36:*.au=1;36:*.flac=1;36:*.m4a=1;36:*.mid=1;36:*.midi=1;36:*.mka=1;36:*.mp3=1;36:*.mpc=1;36:*.ogg=1;36:*.ra=1;36:*.wav=1;36:*.oga=1;36:*.opus=1;36:*.spx=1;36:*.xspf=1;36:*.pdf=1;33:*.doc=1;33:*.docx=1;33:*.xls=1;33:*.xlsx=1;33:*.ppt=1;33:*.pptx=1;33:*.txt=37:*.md=1;33:*.conf=37:*.ini=37:*.yml=37:*.json=37:*.xml=37:*.py=32:*.js=32:*.ts=32:*.html=32:*.css=32:*.c=32:*.cpp=32:*.h=32:*.sh=32:*.go=32:*.rs=32:*.java=32"
+
+if ls --color > /dev/null 2>&1; then
+  alias ls='ls --color=auto'
+else
+  export CLICOLOR=1
+  export LSCOLORS=ExFxBxDxCxegedabagacad
+  alias ls='ls -G'
+fi
+
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# --- Navegación inteligente del historial ---
+autoload -U up-line-or-beginning-search
+autoload -U down-line-or-beginning-search
+
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+bindkey "^[[A" up-line-or-beginning-search
+bindkey "^[[B" down-line-or-beginning-search
+
+if [[ -n "${terminfo[kcuu1]}" ]]; then
+  bindkey "${terminfo[kcuu1]}" up-line-or-beginning-search
+  bindkey "${terminfo[kcud1]}" down-line-or-beginning-search
+fi
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
+typeset -A ZSH_HIGHLIGHT_STYLES
+
+ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=foreground'
+ZSH_HIGHLIGHT_STYLES[error]='fg=foreground'
+
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=yellow,bold'
+
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=yellow,bold'
+
+ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]='fg=cyan,bold'
