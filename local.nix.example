@@ -1,0 +1,37 @@
+# Copiar este archivo a flake-vars.nix y personalizar con tus datos
+# Este archivo NO debe ser trackeado en git - contiene información personal
+# Copy this file to flake-vars.nix and customize with your data
+# This file should NOT be tracked in git - it contains personal information
+
+{
+  # Usuario y home directory
+  # User and home directory
+  username = "samuel";
+  homeDirectory = "/home/samuel";  # Cambiar en macOS: /Users/username
+  stateVersion = "25.05";
+
+  # Configuración de Git
+  # Git configuration
+  git = {
+    userName = "Samuel Ruiz";
+    userEmail = "samue@ruizsamuel.es";
+    
+    # Configuración de firma GPG (dejar vacío si no lo necesitas)
+    # GPG signing config (leave empty if not needed)
+    signing = {
+      enable = false;  # Cambiar a true si quieres firmar commits
+      key = "";        # Tu fingerprint de GPG (ej: "6B50E0FDEA729EB7")
+    };
+  };
+
+  # Configuración de desarrollo (opcionales)
+  # Development configuration (optional)
+  development = {
+    # Paquetes adicionales que desees instalar
+    # Additional packages you want to install
+    enablePython = true;
+    enableNodeJs = true;
+    enableRust = false;
+    enableDocker = true;
+  };
+}

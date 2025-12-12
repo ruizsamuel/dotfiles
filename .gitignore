@@ -1,1 +1,3 @@
 dotfiles/zshrc_extra
+# Configuración local - NO trackear en git
+local.nix

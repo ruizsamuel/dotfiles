@@ -1,12 +1,21 @@
 { config, pkgs, nvim-config, lib, ... }:
 
+let
+  # Importar configuración local desde local.nix
+  # Si el archivo no existe, usar valores por defecto
+  localConfig = 
+    if builtins.pathExists ./local.nix
+    then import ./local.nix
+    else import ./local.nix.example;
+in
+
 {
     imports = [
     ];
 
-    home.username = "samuel";
-    home.homeDirectory = "/home/samuel";
-    home.stateVersion = "25.05";
+    home.username = localConfig.username;
+    home.homeDirectory = localConfig.homeDirectory;
+    home.stateVersion = localConfig.stateVersion;
     nixpkgs.config.allowUnfree = true;
 
     home.packages = with pkgs; [
@@ -67,22 +76,21 @@
     programs.git = {
         enable = true;
 
-        userName = "Samuel Ruiz";
-        userEmail = "samue@ruizsamuel.es";
-
-        signing = {
-            key = "6B50E0FDEA729EB7";
+        signing = lib.mkIf localConfig.git.signing.enable {
+            key = localConfig.git.signing.key;
             signByDefault = false;
         };
 
-        extraConfig = {
+        settings = {
+            user.name = localConfig.git.userName;
+            user.email = localConfig.git.userEmail;
             gpg.program = "gpg";
         };
     };
 
     services.gpg-agent = {
         enable = true;
-        pinentryPackage = pkgs.pinentry-curses;
+        pinentry.package = pkgs.pinentry-curses;
     };
 
     home.activation.restartTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
