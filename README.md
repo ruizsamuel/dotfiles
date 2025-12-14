@@ -66,26 +66,6 @@ Update the values:
 > cp config.nix config.nix.backup
 > git pull
 > # Restore your personal settings if needed
-> ```
-```nix
-{
-  username = "your-username";           # Your username (same as `whoami`)
-  homeDirectory = "/home/your-username"; # Your home directory
-  stateVersion = "25.05";               # Don't change unless you know what you're doing
-
-  git = {
-    userName = "Your Name";
-    userEmail = "your.email@example.com";
-    
-    signing = {
-      enable = false;  # Change to true if you want to sign commits with GPG
-      key = "";        # Your GPG fingerprint if needed
-    };
-  };
-}
-```
-
-> **Important Note**: The file `local.nix` is ignored by git (in `.gitignore`) to prevent your personal data from being uploaded to the repository. Only `local.nix.example` is tracked.
 
 ### 3. Install Configuration
 
