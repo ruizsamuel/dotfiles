@@ -4,7 +4,7 @@
 
   git = {
     userName = "Samuel Ruiz";
-    userEmail = "samue@ruizsamuel.es";
+    userEmail = "samuel@ruizsamuel.es";
     
     signing = {
       enable = true;
