@@ -12,11 +12,4 @@
       key = "";
     };
   };
-
-  development = {
-    enablePython = true;
-    enableNodeJs = true;
-    enableRust = false;
-    enableDocker = true;
-  };
 }

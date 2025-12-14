@@ -59,13 +59,6 @@ Edit `local.nix` with your personal data:
       key = "";        # Your GPG fingerprint if needed
     };
   };
-
-  development = {
-    enablePython = true;
-    enableNodeJs = true;
-    enableRust = false;
-    enableDocker = true;
-  };
 }
 ```
 
@@ -73,13 +66,29 @@ Edit `local.nix` with your personal data:
 
 ### 3. Install Configuration
 
-**For Linux (x86_64) only:**
+Apply the configuration:
 
+**Linux x86_64:**
 ```bash
 home-manager switch --flake .#samuel
 ```
 
-> **Note**: The `.#samuel` configuration defaults to `x86_64-linux`. For other architectures or macOS, see [Multi-Architecture Support](#multi-architecture-support) below.
+**Linux ARM (Raspberry Pi, etc.):**
+```bash
+home-manager switch --flake .#samuel@aarch64-linux
+```
+
+**macOS Apple Silicon:**
+```bash
+home-manager switch --flake .#samuel@aarch64-darwin
+```
+
+**macOS Intel:**
+```bash
+home-manager switch --flake .#samuel@x86_64-darwin
+```
+
+> **Note**: `.#samuel` defaults to `x86_64-linux`. Other architectures must be specified explicitly.
 
 ## Multi-Architecture Support
 
@@ -90,31 +99,7 @@ This configuration supports multiple architectures and operating systems:
 - **x86_64-darwin**: macOS on Intel
 - **aarch64-darwin**: macOS on Apple Silicon (M1/M2/M3/etc.)
 
-### Installing on Different Systems
-
-**Linux x86_64** (default):
-```bash
-home-manager switch --flake .#samuel
-# or explicitly:
-home-manager switch --flake .#samuel@x86_64-linux
-```
-
-**Raspberry Pi / ARM Linux**:
-```bash
-home-manager switch --flake .#samuel@aarch64-linux
-```
-
-**macOS Apple Silicon (M1/M2/M3/etc.)**:
-```bash
-home-manager switch --flake .#samuel@aarch64-darwin
-```
-
-**macOS Intel**:
-```bash
-home-manager switch --flake .#samuel@x86_64-darwin
-```
-
-> **Note**: macOS users must specify the system explicitly (`@aarch64-darwin` or `@x86_64-darwin`) because `.#samuel` defaults to Linux. See [macOS Installation Guide](#appendix-macos-installation-guide) for first-time setup.
+Always specify your system explicitly when running `home-manager switch` as shown in the [Install Configuration](#3-install-configuration) section above.
 
 > **Note**: The configuration is portable across architectures. Nix handles dependency resolution for each platform automatically. However, you must specify your system explicitly in the flake command (e.g., `@aarch64-darwin`, `@x86_64-linux`). If you need OS-specific packages, they can be conditionally included using `lib.optionals stdenv.isLinux` or `lib.optionals stdenv.isDarwin` in `home.nix`.
 

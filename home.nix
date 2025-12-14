@@ -2,11 +2,8 @@
 
 let
   # Importar configuración local desde local.nix
-  # Si el archivo no existe, usar valores por defecto
-  localConfig = 
-    if builtins.pathExists ./local.nix
-    then import ./local.nix
-    else import ./local.nix.example;
+  # Este archivo debe existir (copiar de local.nix.example)
+  localConfig = import ./local.nix;
 in
 
 {
