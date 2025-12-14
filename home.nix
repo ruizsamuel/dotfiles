@@ -1,18 +1,16 @@
 { config, pkgs, nvim-config, lib, ... }:
 
 let
-  # Importar configuración local desde local.nix
-  # Este archivo debe existir (copiar de local.nix.example)
-  localConfig = import ./local.nix;
+  personalConfig = import ./config.nix;
 in
 
 {
     imports = [
     ];
 
-    home.username = localConfig.username;
-    home.homeDirectory = localConfig.homeDirectory;
-    home.stateVersion = localConfig.stateVersion;
+    home.username = personalConfig.username;
+    home.homeDirectory = personalConfig.homeDirectory;
+    home.stateVersion = "25.05";
     nixpkgs.config.allowUnfree = true;
 
     home.packages = with pkgs; [
@@ -73,14 +71,14 @@ in
     programs.git = {
         enable = true;
 
-        signing = lib.mkIf localConfig.git.signing.enable {
-            key = localConfig.git.signing.key;
+        signing = lib.mkIf personalConfig.git.signing.enable {
+            key = personalConfig.git.signing.key;
             signByDefault = false;
         };
 
         settings = {
-            user.name = localConfig.git.userName;
-            user.email = localConfig.git.userEmail;
+            user.name = personalConfig.git.userName;
+            user.email = personalConfig.git.userEmail;
             gpg.program = "gpg";
         };
     };

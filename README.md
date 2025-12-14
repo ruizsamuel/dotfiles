@@ -38,12 +38,35 @@ git clone https://github.com/ruizsamuel/dotfiles.git
 cd dotfiles
 ```
 
-Create your personal configuration file from the example:
+Edit `config.nix` with your personal data:
 ```bash
-cp local.nix.example local.nix
+nano config.nix  # or use your preferred editor
 ```
 
-Edit `local.nix` with your personal data:
+Update the values:
+```nix
+{
+  username = "your-username";
+  homeDirectory = "/home/your-username";  # On macOS use /Users/your-username
+  
+  git = {
+    userName = "Your Name";
+    userEmail = "your.email@example.com";
+    
+    signing = {
+      enable = false;  # Change to true if you want to sign commits with GPG
+      key = "";        # Your GPG fingerprint if needed
+    };
+  };
+}
+```
+
+> **Important**: `config.nix` is tracked in git. When pulling updates, back up your local changes first:
+> ```bash
+> cp config.nix config.nix.backup
+> git pull
+> # Restore your personal settings if needed
+> ```
 ```nix
 {
   username = "your-username";           # Your username (same as `whoami`)

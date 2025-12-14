@@ -15,7 +15,6 @@
 
     outputs = { self, nixpkgs, home-manager, nvim-config, ... }@inputs:
     let
-        # Función auxiliar para crear configuraciones
         mkHomeConfig = system: home-manager.lib.homeManagerConfiguration {
             pkgs = nixpkgs.legacyPackages."${system}";
             extraSpecialArgs = {
@@ -26,7 +25,6 @@
             ];
         };
         
-        # Sistemas soportados
         systems = [
             "x86_64-linux"
             "aarch64-linux"
@@ -34,14 +32,12 @@
             "aarch64-darwin"
         ];
     in {
-        # Generar configuraciones para todos los sistemas
         homeConfigurations = (builtins.listToAttrs (
             map (system: {
                 name = "samuel@${system}";
                 value = mkHomeConfig system;
             }) systems
         )) // {
-            # Default configuration (x86_64-linux)
             "samuel" = mkHomeConfig "x86_64-linux";
         };
     };
