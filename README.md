@@ -28,6 +28,8 @@ After installation, ensure Flakes are enabled in your Nix configuration file (`/
 experimental-features = nix-command flakes
 ```
 
+> **macOS Users**: See [macOS Installation Guide](#appendix-macos-installation-guide) for first-time setup instructions.
+
 ### 2. Personalize Your Configuration
 
 Clone the repository:
@@ -69,15 +71,15 @@ Edit `local.nix` with your personal data:
 
 > **Important Note**: The file `local.nix` is ignored by git (in `.gitignore`) to prevent your personal data from being uploaded to the repository. Only `local.nix.example` is tracked.
 
-> **macOS Users**: See [macOS-specific instructions](#macos-installation-guide) for first-time setup.
-
 ### 3. Install Configuration
 
-Apply the configuration using Home Manager (automatically detects your system):
+**For Linux (x86_64) only:**
 
 ```bash
 home-manager switch --flake .#samuel
 ```
+
+> **Note**: The `.#samuel` configuration defaults to `x86_64-linux`. For other architectures or macOS, see [Multi-Architecture Support](#multi-architecture-support) below.
 
 ## Multi-Architecture Support
 
@@ -102,14 +104,19 @@ home-manager switch --flake .#samuel@x86_64-linux
 home-manager switch --flake .#samuel@aarch64-linux
 ```
 
-**macOS Intel or Apple Silicon**:
+**macOS Apple Silicon (M1/M2/M3/etc.)**:
 ```bash
-home-manager switch --flake .#samuel
+home-manager switch --flake .#samuel@aarch64-darwin
 ```
 
-> **Note**: This configuration works with Home Manager only on macOS. You don't need nix-darwin unless you want to manage system-level settings. See [macOS Installation Guide](#macos-installation-guide) for first-time setup.
+**macOS Intel**:
+```bash
+home-manager switch --flake .#samuel@x86_64-darwin
+```
 
-> **Note**: The configuration is automatically portable across architectures. Nix handles dependency resolution for each platform. If you need OS-specific packages, they can be conditionally included using `lib.optionals stdenv.isLinux` or `lib.optionals stdenv.isDarwin` in `home.nix`.
+> **Note**: macOS users must specify the system explicitly (`@aarch64-darwin` or `@x86_64-darwin`) because `.#samuel` defaults to Linux. See [macOS Installation Guide](#appendix-macos-installation-guide) for first-time setup.
+
+> **Note**: The configuration is portable across architectures. Nix handles dependency resolution for each platform automatically. However, you must specify your system explicitly in the flake command (e.g., `@aarch64-darwin`, `@x86_64-linux`). If you need OS-specific packages, they can be conditionally included using `lib.optionals stdenv.isLinux` or `lib.optionals stdenv.isDarwin` in `home.nix`.
 
 ---
 
@@ -154,24 +161,36 @@ This section provides specific instructions for setting up this configuration on
    
    Follow the [personalization instructions](#2-personalize-your-configuration) above, but remember to use `/Users/your-username` instead of `/home/your-username` for the `homeDirectory` field.
 
-4. **Apply the configuration**:
+4. **Apply the configuration** (use your specific architecture):
+   
+   For Apple Silicon (M1/M2/M3/etc.):
    ```bash
-   home-manager switch --flake .#samuel
+   home-manager switch --flake .#samuel@aarch64-darwin
+   ```
+   
+   For Intel Macs:
+   ```bash
+   home-manager switch --flake .#samuel@x86_64-darwin
    ```
 
 ### macOS-Specific Notes
 
 - **Home directory**: Use `/Users/username` instead of `/home/username`
+- **System architecture**: You must specify your architecture explicitly when switching:
+  - Apple Silicon: `@aarch64-darwin`
+  - Intel: `@x86_64-darwin`
 - **Docker**: Install Docker Desktop separately from the official website. The `docker` package in Nix is just the CLI
-- **System architecture**: The flake automatically detects if you're on Intel or Apple Silicon
 - **nix-darwin**: Not required for this configuration. Home Manager is sufficient for managing user-level dotfiles
 
 ### Updating Configuration
 
-After the initial setup, updates work the same as on Linux:
+After the initial setup, updates work the same way:
 
 ```bash
 cd ~/.config/home-manager
 git pull
-home-manager switch --flake .#samuel
+# Use your specific architecture:
+home-manager switch --flake .#samuel@aarch64-darwin  # Apple Silicon
+# or
+home-manager switch --flake .#samuel@x86_64-darwin   # Intel
 ```
