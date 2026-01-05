@@ -68,6 +68,8 @@ symbol = " "
 [hostname]
 ssh_symbol = " "
 style = "bold bright-green"
+[username]
+style_user = "bold bright-blue"
 
 [java]
 symbol = " "
