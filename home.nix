@@ -33,6 +33,8 @@ in
         openssh
         nodePackages.typescript-language-server
         nodePackages.typescript
+        claude-code
+	copilot-cli
     ];
 
     programs.zsh = {
