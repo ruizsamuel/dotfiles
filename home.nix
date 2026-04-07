@@ -34,7 +34,7 @@ in
         nodePackages.typescript-language-server
         nodePackages.typescript
         claude-code
-	copilot-cli
+        gh
     ];
 
     programs.zsh = {
@@ -44,6 +44,11 @@ in
         ${builtins.readFile ./dotfiles/zshrc}
         ${builtins.readFile ./dotfiles/zshrc_extra}
         '';
+    };
+
+    programs.gh = {
+      enable = true;
+      extensions = [ pkgs.github-copilot-cli ];
     };
 
     programs.tmux = {
