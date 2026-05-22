@@ -3,11 +3,13 @@
 let
     personalConfig = import ./config.nix;
     androidComposition = pkgs.androidenv.composeAndroidPackages {
-      cmdLineToolsVersion = "latest";
-      platformVersions = [ "35" ];
-      buildToolsVersions = [ "35.0.0" ];
-      includeNDK = false;
-      includeEmulator = false;
+        cmdLineToolsVersion = "latest";
+        platformVersions = [ "35" "36" ];
+        buildToolsVersions = [ "35.0.0" "36.0.0" ];
+        includeNDK = true;
+        ndkVersions = [ "27.1.12297006" ];
+        cmakeVersions = [ "3.22.1" ];
+        includeEmulator = false;
     };
     androidSdk = androidComposition.androidsdk;
 in
@@ -35,7 +37,7 @@ in
         python3
         python3.pkgs.pip
         python3.pkgs.python-lsp-server
-        jdk17
+        jdk
         androidSdk
         ruff
         unzip
@@ -84,7 +86,8 @@ in
     home.sessionVariables = {
         ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
         ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
-        PATH = "${androidSdk}/libexec/android-sdk/platform-tools:${androidSdk}/libexec/android-sdk/build-tools/35.0.0:$PATH";
+        ANDROID_NDK_HOME = "${androidSdk}/libexec/android-sdk/ndk/27.1.12297006";
+        PATH = "${androidSdk}/libexec/android-sdk/platform-tools:${androidSdk}/libexec/android-sdk/build-tools/36.0.0:$PATH";
     };
 
     programs.starship = {
@@ -119,4 +122,10 @@ in
     '';
 
     programs.home-manager.enable = true;
+
+    nix.gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 30d";
+    };
 }
