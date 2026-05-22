@@ -1,10 +1,18 @@
 { config, pkgs, nvim-config, lib, ... }:
 
 let
-  personalConfig = import ./config.nix;
+    personalConfig = import ./config.nix;
+    androidComposition = pkgs.androidenv.composeAndroidPackages {
+      cmdLineToolsVersion = "latest";
+      platformVersions = [ "35" ];
+      buildToolsVersions = [ "35.0.0" ];
+      includeNDK = false;
+      includeEmulator = false;
+    };
+    androidSdk = androidComposition.androidsdk;
 in
 
-{
+    {
     imports = [
     ];
 
@@ -12,6 +20,7 @@ in
     home.homeDirectory = personalConfig.homeDirectory;
     home.stateVersion = "25.05";
     nixpkgs.config.allowUnfree = true;
+    nixpkgs.config.android_sdk.accept_license = true;
 
     home.packages = with pkgs; [
         neovim
@@ -26,6 +35,8 @@ in
         python3
         python3.pkgs.pip
         python3.pkgs.python-lsp-server
+        jdk17
+        androidSdk
         ruff
         unzip
         gnupg
@@ -41,14 +52,14 @@ in
         syntaxHighlighting.enable = true;
         enable = true;
         initContent = ''
-        ${builtins.readFile ./dotfiles/zshrc}
-        ${builtins.readFile ./dotfiles/zshrc_extra}
+            ${builtins.readFile ./dotfiles/zshrc}
+            ${builtins.readFile ./dotfiles/zshrc_extra}
         '';
     };
 
     programs.gh = {
-      enable = true;
-      extensions = [ pkgs.github-copilot-cli ];
+        enable = true;
+        extensions = [ pkgs.github-copilot-cli ];
     };
 
     programs.tmux = {
@@ -68,6 +79,12 @@ in
     home.file.".config/nvim" = {
         source = nvim-config;
         recursive = true;
+    };
+
+    home.sessionVariables = {
+        ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+        ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
+        PATH = "${androidSdk}/libexec/android-sdk/platform-tools:${androidSdk}/libexec/android-sdk/build-tools/35.0.0:$PATH";
     };
 
     programs.starship = {
