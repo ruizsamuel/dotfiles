@@ -44,8 +44,8 @@ in
         gnupg
         pinentry-curses
         openssh
-        nodePackages.typescript-language-server
-        nodePackages.typescript
+        typescript-language-server
+        typescript
         claude-code
         gh
     ];
