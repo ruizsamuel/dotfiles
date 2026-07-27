@@ -18,7 +18,9 @@ let
         abiVersions = [ androidAbi ];
     };
     androidSdk = androidComposition.androidsdk;
-    androidRoot = "${androidSdk}/libexec/android-sdk";
+    # Ruta ESTABLE de runtime: el symlink del perfil sigue a la generación actual
+    # sin cambiar de string, así que el entorno no se rompe en cada switch.
+    androidRootStable = "${personalConfig.homeDirectory}/.nix-profile/libexec/android-sdk";
 in
     {
     imports = [
@@ -83,15 +85,17 @@ in
         recursive = true;
     };
     home.sessionVariables = {
-        ANDROID_HOME = androidRoot;
-        ANDROID_SDK_ROOT = androidRoot;
-        ANDROID_NDK_HOME = "${androidRoot}/ndk/27.1.12297006";
+        ANDROID_HOME = androidRootStable;
+        ANDROID_SDK_ROOT = androidRootStable;
+        ANDROID_NDK_HOME = "${androidRootStable}/ndk/27.1.12297006";
+        # Gradle (builds nativos de Android) necesita JAVA_HOME apuntando al JDK.
+        JAVA_HOME = pkgs.jdk.home;
     };
     home.sessionPath = [
-        "${androidRoot}/platform-tools"
-        "${androidRoot}/build-tools/36.0.0"
-        "${androidRoot}/cmdline-tools/latest/bin"
-        "${androidRoot}/emulator"
+        "${androidRootStable}/platform-tools"
+        "${androidRootStable}/build-tools/36.0.0"
+        "${androidRootStable}/cmdline-tools/latest/bin"
+        "${androidRootStable}/emulator"
     ];
     programs.starship = {
         enable = true;
