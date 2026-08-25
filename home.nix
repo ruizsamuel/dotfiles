@@ -9,7 +9,7 @@ let
         cmdLineToolsVersion = "latest";
         platformVersions = [ "35" "36" ];
         buildToolsVersions = [ "35.0.0" "36.0.0" ];
-        includeNDK = false;
+        includeNDK = true;
         ndkVersions = [ "27.1.12297006" ];
         cmakeVersions = [ "3.22.1" ];
         includeEmulator = true;
