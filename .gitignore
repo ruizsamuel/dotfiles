@@ -1,1 +1,4 @@
-dotfiles/zshrc_extra
+result
+result-*
+.direnv/
+.claude/

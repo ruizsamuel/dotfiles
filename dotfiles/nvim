@@ -1,2 +1,0 @@
-TO CHANGE THE REPOSITORY: Edit the 'url' line in flake.nix (L15).
-The current repository URL is: github:ruizsamuel/nvim

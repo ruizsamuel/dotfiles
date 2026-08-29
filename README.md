@@ -1,184 +1,141 @@
 # Dotfiles
 
-This repository contains my personal environment configuration managed using **Nix Flakes** and **Home Manager**.
+My personal environment, managed with **Nix flakes** and **Home Manager**.
 
-## Features Included
+User-space only — no NixOS. Every host is a regular Linux or macOS machine with
+Nix installed on top, so the same repository works on WSL, on a headless server,
+on a Linux desktop and on a Mac.
 
-* **Shell**: Zsh (custom settings sourced from `dotfiles/zshrc`).
+## Quick start
 
-* **Terminal Multiplexer**: Tmux (with minimal-tmux-status plugin and custom settings from `dotfiles/tmux`).
-
-* **Editor**: Neovim (linked to external configuration via the nvim-config input).
-
-* **Prompt**: Starship (`dotfiles/starship.toml`).
-
-* **Packages**: Docker, Node.js, Python 3 environment, Git, GCC, and development utilities.
-
-## Setup Instructions
-
-### 1. Prerequisites (Nix Installation)
-
-The Nix installation must support Flakes. If you don't have Nix, install it using the multi-user script:
 ```bash
-curl -L https://nixos.org/nix/install | sh
+# 1. Install Nix (any installer with flakes enabled)
+sh <(curl -L https://nixos.org/nix/install) --daemon
+
+# 2. Clone and pick a host
+git clone https://github.com/ruizsamuel/dotfiles ~/dotfiles && cd ~/dotfiles
+nix run home-manager/master -- switch --flake .#samuel@wsl
 ```
 
-After installation, ensure Flakes are enabled in your Nix configuration file (`/etc/nix/nix.conf` or `~/.config/nix/nix.conf`):
-```
-experimental-features = nix-command flakes
-```
+Forking this for yourself means editing exactly one file, [`identity.nix`](identity.nix):
+username, git name and email, and the GPG key used for signing. Nothing in it is
+secret — an email is already public in every commit you push, and a GPG key ID
+identifies a *public* key. It has to stay in git because Nix reads it during
+evaluation, so gitignoring it is not an option.
 
-> **macOS Users**: See [macOS Installation Guide](#appendix-macos-installation-guide) for first-time setup instructions.
+## Hosts
 
-### 2. Personalize Your Configuration
+| Host | System | What it is |
+|---|---|---|
+| `wsl` | `x86_64-linux` | WSL2 on Windows. Main development machine |
+| `server` | `x86_64-linux` | Headless. Always-on Orca runtime |
+| `desktop` | `x86_64-linux` | Native Linux desktop |
+| `mac` | `aarch64-darwin` | macOS on Apple Silicon |
 
-Clone the repository:
-```bash
-git clone https://github.com/ruizsamuel/dotfiles.git
-cd dotfiles
-```
+Each host is a file in [`hosts/`](hosts) that imports the modules it needs.
+Adding a machine is one line in `flake.nix` plus that file — including the same
+host on a different architecture:
 
-Edit `config.nix` with your personal data:
-```bash
-nano config.nix  # or use your preferred editor
-```
-
-Update the values:
 ```nix
-{
-  username = "your-username";
-  homeDirectory = "/home/your-username";  # On macOS use /Users/your-username
-  
-  git = {
-    userName = "Your Name";
-    userEmail = "your.email@example.com";
-    
-    signing = {
-      enable = false;  # Change to true if you want to sign commits with GPG
-      key = "";        # Your GPG fingerprint if needed
-    };
-  };
-}
+hosts = {
+  wsl = "x86_64-linux";
+  server-arm = "aarch64-linux";   # hosts/server-arm.nix: imports = [ ./server.nix ];
+};
 ```
 
-> **Important**: `config.nix` is tracked in git. When pulling updates, back up your local changes first:
-> ```bash
-> cp config.nix config.nix.backup
-> git pull
-> # Restore your personal settings if needed
+## Modules
 
-### 3. Install Configuration
+| Module | Contents | Hosts |
+|---|---|---|
+| `base` | Identity, state version, GC | all |
+| `shell` | Zsh, Starship | all |
+| `tmux` | Tmux | all |
+| `git` | Git, GitHub CLI, GPG signing | all |
+| `neovim` | Neovim, config from its own repo | all |
+| `dev` | Node, Python, JDK, toolchains, LSPs, Docker | all |
+| `agents` | Claude Code and personal skills | all |
+| `android` | SDK, NDK, emulator | wsl, desktop |
+| `orca` | Orca package, headless server, pairing helper | wsl, server |
 
-Apply the configuration:
+Only `orca` exposes options, for the port and the advertised pairing address.
 
-**Linux x86_64:**
-```bash
-home-manager switch --flake .#samuel
-```
+The Mac deliberately gets neither `android` nor `orca`: both have a macOS-native
+counterpart that owns its own state — Android Studio manages its SDK under
+`~/Library/Android/sdk`, and Orca ships a Homebrew cask. A second, Nix-managed
+copy would only fight them.
 
-**Linux ARM (Raspberry Pi, etc.):**
-```bash
-home-manager switch --flake .#samuel@aarch64-linux
-```
+## Orca headless server
 
-**macOS Apple Silicon:**
-```bash
-home-manager switch --flake .#samuel@aarch64-darwin
-```
-
-**macOS Intel:**
-```bash
-home-manager switch --flake .#samuel@x86_64-darwin
-```
-
-> **Note**: `.#samuel` defaults to `x86_64-linux`. Other architectures must be specified explicitly.
-
-## Multi-Architecture Support
-
-This configuration supports multiple architectures and operating systems:
-
-- **x86_64-linux**: Linux on Intel/AMD processors
-- **aarch64-linux**: Linux on ARM (Raspberry Pi, etc.)
-- **x86_64-darwin**: macOS on Intel
-- **aarch64-darwin**: macOS on Apple Silicon (M1/M2/M3/etc.)
-
-Always specify your system explicitly when running `home-manager switch` as shown in the [Install Configuration](#3-install-configuration) section above.
-
-> **Note**: The configuration is portable across architectures. Nix handles dependency resolution for each platform automatically. However, you must specify your system explicitly in the flake command (e.g., `@aarch64-darwin`, `@x86_64-linux`). If you need OS-specific packages, they can be conditionally included using `lib.optionals stdenv.isLinux` or `lib.optionals stdenv.isDarwin` in `home.nix`.
-
----
-
-## Appendix: macOS Installation Guide
-
-This section provides specific instructions for setting up this configuration on macOS for the first time.
-
-### Prerequisites
-
-1. **Install Nix** (if not already installed):
-   ```bash
-   curl -L https://nixos.org/nix/install | sh
-   ```
-
-2. **Enable Flakes** in `~/.config/nix/nix.conf` (create if it doesn't exist):
-   ```
-   experimental-features = nix-command flakes
-   ```
-
-3. **Restart your terminal** to apply changes.
-
-### First-Time Setup
-
-1. **Install Home Manager standalone**:
-   ```bash
-   nix run home-manager/master -- init --switch
-   ```
-
-2. **Replace the generated configuration with this repository**:
-   ```bash
-   cd ~/.config/home-manager
-   rm -rf *  # Remove auto-generated files
-   
-   # Clone this repository
-   git clone https://github.com/ruizsamuel/dotfiles.git .
-   ```
-
-3. **Create and edit your local configuration**:
-   ```bash
-   cp local.nix.example local.nix
-   ```
-   
-   Follow the [personalization instructions](#2-personalize-your-configuration) above, but remember to use `/Users/your-username` instead of `/home/your-username` for the `homeDirectory` field.
-
-4. **Apply the configuration** (use your specific architecture):
-   
-   For Apple Silicon (M1/M2/M3/etc.):
-   ```bash
-   home-manager switch --flake .#samuel@aarch64-darwin
-   ```
-   
-   For Intel Macs:
-   ```bash
-   home-manager switch --flake .#samuel@x86_64-darwin
-   ```
-
-### macOS-Specific Notes
-
-- **Home directory**: Use `/Users/username` instead of `/home/username`
-- **System architecture**: You must specify your architecture explicitly when switching:
-  - Apple Silicon: `@aarch64-darwin`
-  - Intel: `@x86_64-darwin`
-- **Docker**: Install Docker Desktop separately from the official website. The `docker` package in Nix is just the CLI
-- **nix-darwin**: Not required for this configuration. Home Manager is sufficient for managing user-level dotfiles
-
-### Updating Configuration
-
-After the initial setup, updates work the same way:
+The `orca-serve` user service runs `orca serve`, so an Orca client — desktop or
+mobile — can attach to the machine. See the
+[remote servers documentation](https://www.onorca.dev/docs/remote-servers).
 
 ```bash
-cd ~/.config/home-manager
-git pull
-# Use your specific architecture:
-home-manager switch --flake .#samuel@aarch64-darwin  # Apple Silicon
-# or
-home-manager switch --flake .#samuel@x86_64-darwin   # Intel
+orca-pairing                            # print the pairing URL
+systemctl --user status orca-serve      # is it up?
+journalctl --user -t orca-serve -e      # full server log
 ```
+
+Paste the `orca://pair?code=…` URL into the client under
+**Settings → Remote Orca Servers → Add Server**.
+
+`orca-pairing` is the only command needed when the machine's address changes: it
+compares what the running service advertises against what the configuration
+expects and restarts it to regenerate the URL if they differ. Nothing in the Nix
+configuration changes.
+
+Some hard-won details:
+
+- The server always binds `0.0.0.0` — there is no bind flag. `local.orca.pairingAddress`
+  only changes what clients are told. Left unset it advertises the machine's LAN
+  address, detected at service start; an address containing `://` is embedded in
+  the pairing code verbatim, with no port appended, which is what the `server`
+  host uses to advertise its public subdomain behind nginx. `localhost` does
+  **not** work: the client reads a loopback endpoint as its own runtime and
+  refuses to pair.
+- The runtime is an Electron process and will not start without an X server,
+  so the service wraps it in `xvfb-run` — an in-memory display, not a GUI. Under
+  WSL specifically, WSLg's own display (`DISPLAY=:0`) makes it die with `SIGTRAP`.
+- On WSL the address survives reboots only if the NAT subnet is pinned in
+  `.wslconfig` on the Windows side, otherwise WSL regenerates it on every boot
+  and you have to pair again:
+
+  ```ini
+  [wsl2]
+  networkingMode=nat
+  natNetwork=192.168.128.0/20
+  ```
+
+- Never expose the Orca port to the public internet.
+
+## Agent skills
+
+Personal skills live in [`skills/`](skills) and are symlinked into
+`~/.claude/skills`. Dropping a new directory in there is enough — the module
+reads the directory, there is no list to update.
+
+Orca's own skills are deliberately **not** versioned here. They belong to the
+app and are updated with it:
+
+```bash
+orca skills install --all   # on a fresh machine
+orca skills update
+```
+
+They land in `~/.agents/skills` and are symlinked into `~/.claude/skills`, so
+both sets coexist without clobbering each other.
+
+## Development
+
+```bash
+nix fmt              # format (nixfmt via treefmt)
+nix fmt -- --ci      # check formatting without writing
+nix develop          # shell with the formatter and home-manager
+
+nix eval --raw '.#homeConfigurations."samuel@mac".activationPackage.drvPath'
+```
+
+That last command is the useful one: it evaluates a host without building it,
+which catches unportable packages and renamed options in seconds. CI runs it for
+every host on each push — Linux hosts on `ubuntu-latest`, the macOS host on
+`macos-14`, since a Linux runner cannot evaluate a Darwin configuration.

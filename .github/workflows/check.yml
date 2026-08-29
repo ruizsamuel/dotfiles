@@ -1,0 +1,46 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Every Linux host is evaluated, not built. Building would pull the Android
+  # SDK with its emulator and system images — several GB that no CI runner
+  # should be downloading. Evaluation is what catches the mistakes that matter
+  # here: a package that does not exist on a platform, a module that is not
+  # portable, an option that was renamed upstream.
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Check formatting
+        run: nix fmt -- --ci
+
+      - name: Evaluate Linux hosts
+        run: |
+          for host in wsl server desktop; do
+            echo "::group::$host"
+            nix eval --raw ".#homeConfigurations.\"samuel@$host\".activationPackage.drvPath"
+            echo
+            echo "::endgroup::"
+          done
+
+  # macOS needs its own runner: a Linux machine cannot evaluate a Darwin
+  # configuration, because nixpkgs resolves packages per platform.
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Evaluate the macOS host
+        run: nix eval --raw '.#homeConfigurations."samuel@mac".activationPackage.drvPath'
