@@ -47,7 +47,7 @@ hosts = {
 
 | Module | Contents | Hosts |
 |---|---|---|
-| `base` | Identity, state version, GC | all |
+| `base` | Identity, state version, store GC and dedup | all |
 | `shell` | Zsh, Starship | all |
 | `tmux` | Tmux | all |
 | `git` | Git, GitHub CLI, GPG signing | all |
@@ -139,3 +139,18 @@ That last command is the useful one: it evaluates a host without building it,
 which catches unportable packages and renamed options in seconds. CI runs it for
 every host on each push — Linux hosts on `ubuntu-latest`, the macOS host on
 `macos-14`, since a Linux runner cannot evaluate a Darwin configuration.
+
+## Disk
+
+Two systemd user timers on Linux hosts, both in `modules/base.nix`:
+
+- `nix-gc` drops profile generations older than 14 days, then collects what is
+  no longer reachable.
+- `nix-optimise` hard-links identical files across store paths. This one earns
+  its keep whenever nixpkgs moves: the Android system images get rebuilt under
+  new hashes while their contents are the same upstream archive, so a single
+  bump can otherwise cost ~10 GB in duplicates. It deletes nothing, so it costs
+  no rollback.
+
+Home Manager exposes `nix.gc` but not `nix.optimise`, hence the hand-written
+unit for the second one.
