@@ -108,6 +108,41 @@ Some hard-won details:
 
 - Never expose the Orca port to the public internet.
 
+### On a headless server
+
+Two things a desktop or WSL machine already has, and a bare server does not.
+
+**System libraries.** The package deliberately avoids `buildFHSEnv` (see
+`pkgs/orca.nix` for why), so the Electron binary resolves its libraries against
+the host. Install the GTK stack and let apt pull the rest:
+
+```bash
+sudo apt-get install -y \
+  libgtk-3-0t64 libnss3 libasound2t64 libatk-bridge2.0-0t64 libcups2t64 \
+  libgbm1 libdrm2 libxkbcommon0 \
+  libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libxinerama1 libxcursor1 libxi6
+```
+
+Drop the `t64` suffixes on distributions predating the 64-bit `time_t`
+transition. To check what is still missing:
+`ldd <store-path>/orca-ide | grep "not found"`.
+
+**Unprivileged user namespaces.** Chromium's SUID sandbox helper must be
+root-owned and mode 4755, which the read-only Nix store cannot provide, so it
+falls back to the namespace sandbox. Servers that disable unprivileged user
+namespaces make Electron abort instead of running unsandboxed. The service
+probes for them at start and passes `--no-sandbox` only when they are missing,
+so nothing needs configuring — but enabling them keeps the sandbox:
+
+```bash
+sudo sysctl -w kernel.unprivileged_userns_clone=1        # Debian
+sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0   # Ubuntu 24.04+
+```
+
+**Lingering** is required, unlike on a desktop: `orca-serve` is a *user*
+service, so without `sudo loginctl enable-linger <user>` it dies when the SSH
+session ends and never starts at boot.
+
 ## Agent skills
 
 Personal skills live in [`skills/`](skills) and are symlinked into

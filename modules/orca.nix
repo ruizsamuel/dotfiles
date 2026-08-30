@@ -17,6 +17,18 @@ let
 
   serveStart = pkgs.writeShellScript "orca-serve-start" ''
     set -eu
+
+    # Chromium's SUID sandbox helper has to be root-owned and mode 4755, which
+    # is impossible inside the read-only Nix store, so it falls back to the
+    # namespace sandbox. Where unprivileged user namespaces are disabled —
+    # common hardening on Debian and Ubuntu servers — Electron aborts with
+    # "SUID sandbox helper binary ... is not configured correctly" rather than
+    # run unsandboxed. Probe for them the same way the vendor's AppRun does and
+    # ask Orca to pass --no-sandbox only when they are unavailable.
+    if ! ${pkgs.util-linux}/bin/unshare -Ur true 2>/dev/null; then
+      export ORCA_APPIMAGE_NO_SANDBOX=1
+    fi
+
     addr='${toString cfg.pairingAddress}'
     if [ -z "$addr" ]; then
       addr=$(${detectIp})
