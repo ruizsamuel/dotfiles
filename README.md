@@ -108,6 +108,31 @@ Some hard-won details:
 
 - Never expose the Orca port to the public internet.
 
+### Updating Orca
+
+Orca is not in nixpkgs (`pkgs.orca` is the GNOME screen reader), so
+`pkgs/orca.nix` pins a release by version and one hash per architecture. That
+puts it outside `flake.lock`, which means `nix flake update` cannot see it, and
+the app's own auto-updater cannot work either — the Nix store is read-only.
+
+```bash
+nix run .#update-orca          # from the repository root
+nix fmt && git commit -am "chore: update Orca to <version>"
+```
+
+The script reads the latest release from the GitHub API, hashes both AppImages
+and rewrites the version and both hashes in place. It stops early if the pin is
+already current, and leaves the commit to you.
+
+Making the AppImages flake inputs would let `nix flake update` handle them, but
+flake inputs are fetched whenever the flake is evaluated — every host would pull
+two 200 MB files, including the Mac, which has no Orca module, and CI, whose
+entire point is to evaluate cheaply.
+
+Update the desktop client to the same version. The runtime negotiates a protocol
+version with a `status.get` preflight (`RemoteRuntimeCompatGate`), and the client
+updates itself while the server does not, so they drift apart on their own.
+
 ### On a headless server
 
 Two things a desktop or WSL machine already has, and a bare server does not.
@@ -168,6 +193,8 @@ nix fmt -- --ci      # check formatting without writing
 nix develop          # shell with the formatter and home-manager
 
 nix eval --raw '.#homeConfigurations."samuel@mac".activationPackage.drvPath'
+
+nix run .#update-orca   # bump the pinned Orca release
 ```
 
 That last command is the useful one: it evaluates a host without building it,
