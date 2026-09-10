@@ -13,6 +13,13 @@
       url = "github:ruizsamuel/nvim";
       flake = false;
     };
+    # Superpowers ships as a Claude Code plugin, but upstream is a plain git
+    # repo of skill directories, so the lock can pin it exactly and
+    # `nix flake update superpowers` bumps it on its own.
+    superpowers = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
   };
 
   outputs =

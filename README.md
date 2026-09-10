@@ -170,20 +170,117 @@ session ends and never starts at boot.
 
 ## Agent skills
 
-Personal skills live in [`skills/`](skills) and are symlinked into
-`~/.claude/skills`. Dropping a new directory in there is enough — the module
-reads the directory, there is no list to update.
+Two sets of skills share `~/.claude/skills`, managed by different things.
 
-Orca's own skills are deliberately **not** versioned here. They belong to the
-app and are updated with it:
+**Personal skills** live in [`skills/`](skills) and are symlinked from the Nix
+store by `modules/agents.nix`. Dropping a new directory in there is enough — the
+module reads the directory, there is no list to update. These are versioned,
+roll back with the generation, and every host gets them.
+
+**Orca's own skills** are installed by the app's CLI into `~/.agents/skills`,
+which is then symlinked into `~/.claude/skills`. Linking specific paths lets both
+sets coexist without clobbering each other.
+
+| Host | Personal skills | Orca's skills |
+|---|---|---|
+| `wsl` | switch | manual, CLI available |
+| `server` | switch | manual, CLI available |
+| `desktop` | switch | manual, **no CLI** — the host does not import `modules/orca.nix` |
+| `mac` | switch | manual, **no CLI** — install the Homebrew cask, which ships one |
+
+`home-manager switch` never installs Orca's skills, on any host. Run this once
+per machine, and again when you want to pick up upstream changes:
 
 ```bash
-orca skills install --all   # on a fresh machine
+orca skills install --all
 orca skills update
 ```
 
-They land in `~/.agents/skills` and are symlinked into `~/.claude/skills`, so
-both sets coexist without clobbering each other.
+### Superpowers
+
+[Superpowers](https://github.com/obra/superpowers) ships as a plugin for several
+agents, but upstream is a plain git repo of skill directories, so `flake.lock`
+pins it exactly and `nix flake update superpowers` bumps it. Both agents get it
+from the same pinned store path, by different routes.
+
+**Claude Code** takes the 14 skills as symlinks under `~/.claude/skills`,
+alongside the personal ones. Its SessionStart hook cannot be reproduced: a hook
+has to live in `~/.claude/settings.json`, which Orca rewrites to wire its own
+eleven hooks and which Claude Code rewrites whenever you touch `/config`. Nix
+cannot own a contested file. Instead `modules/agents.nix` writes the content the
+hook would have injected — `skills/using-superpowers/SKILL.md`, in the same
+`<EXTREMELY_IMPORTANT>` framing — to `~/.claude/CLAUDE.md`, which nothing else
+owns.
+
+That reimplementation also sidesteps a trap. The hook script branches on
+`CLAUDE_PLUGIN_ROOT`; unset, it emits a field its own comments say Claude Code
+does not read. Run from a store path rather than as a plugin, it would have
+failed silently.
+
+**Copilot CLI** gets the real thing. `copilot --plugin-dir <directory>` loads a
+plugin from a local path, so `modules/agents.nix` wraps the binary to always
+pass the pinned store path:
+
+```nix
+wrapProgram $out/bin/copilot --add-flags "--plugin-dir ${inputs.superpowers}"
+```
+
+Skills and the upstream hook both arrive natively — verified against a live
+session: Copilot invoked `skill(using-superpowers)`, and its startup context
+contained the hook's `You have superpowers`. Because the hook fires on its own,
+writing the same text to `~/.copilot/copilot-instructions.md` would only put it
+in context twice, so that file is deliberately absent.
+
+For the record, user-level Copilot instructions live in
+`~/.copilot/copilot-instructions.md`, not `AGENTS.md` — that one is
+repository-level. `COPILOT_HOME` relocates the directory.
+
+Note that `github-copilot-cli` is the standalone agentic CLI and provides a
+`copilot` binary. It is not a `gh` extension, which is why declaring it under
+`programs.gh.extensions` left `gh extension list` empty.
+
+Turning Superpowers off is a per-host decision, not a per-session one: the
+bootstrap applies to every session on the machine. The skills themselves stay
+usable either way — dropping the `CLAUDE.md` entry removes the pressure to
+always reach for them, not the skills.
+
+### Why this one step is manual
+
+It would be easy to bolt onto activation:
+
+```nix
+home.activation.orcaSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  [ -d "$HOME/.agents/skills" ] || $DRY_RUN_CMD orca skills install --all || true
+'';
+```
+
+The guard keeps it off the network on every switch and the `|| true` keeps it
+from breaking activation, so the obvious objections do not apply. It is still
+the wrong thing, for three reasons.
+
+**It is not reproducible.** `orca skills install` resolves to
+`npx skills add https://github.com/stablyai/orca --skill …`, which fetches
+whatever is on the default branch right now. No version, no hash. The same Nix
+generation applied on two machines on different days would install different
+skills — the exact impurity that pinning Orca by hash and locking the flake
+exists to prevent.
+
+**It creates state Nix cannot undo.** A generation is meant to describe the
+whole state. Skills written by an external installer are invisible to Nix:
+`--rollback` restores the personal skills, because they are store symlinks, and
+leaves Orca's untouched. Configuration and disk drift apart permanently, and the
+garbage collector never reclaims any of it.
+
+**The guard lies.** `[ -d ~/.agents/skills ]` proves a directory exists, not that
+the right skills are present at the right version. Delete one and it still
+passes. It only behaves on a machine's first switch — which is precisely the
+case a line of documentation already covers.
+
+The coherent alternative is not activation but vendoring: pin Orca's skills into
+this repo the way the personal ones are, and let Nix own them properly. That
+buys reproducibility and rollback at the cost of maintaining the pin and
+drifting from whatever the app ships. For skills that belong to the app and
+change with it, that trade is not worth it.
 
 ## Development
 

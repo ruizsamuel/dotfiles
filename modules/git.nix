@@ -17,10 +17,10 @@ in
     };
   };
 
-  programs.gh = {
-    enable = true;
-    extensions = [ pkgs.github-copilot-cli ];
-  };
+  # github-copilot-cli is not a gh extension: it is the standalone agentic CLI
+  # and ships a `copilot` binary, which is why `gh extension list` was empty.
+  # It lives in modules/agents.nix with the other agents.
+  programs.gh.enable = true;
 
   home.packages = with pkgs; [
     gnupg
