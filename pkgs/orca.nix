@@ -12,16 +12,16 @@
 }:
 
 let
-  version = "1.4.190";
+  version = "1.4.199";
 
   sources = {
     x86_64-linux = {
       file = "orca-linux.AppImage";
-      hash = "sha256-9bMhV22ckJ+eaYeqO9IOj/nyFNiBtDxxCSgcvIeHjN4=";
+      hash = "sha256-rrH9Qg3IFbeanBVO26GXj4jljzmO9IUluVcF1mHrr0U=";
     };
     aarch64-linux = {
       file = "orca-linux-arm64.AppImage";
-      hash = "sha256-ikOPMxiJvE+8WgejmmWyfcEkI/MQwtDROIZJ3JOjKMg=";
+      hash = "sha256-4r5F82P5rdHjqb/wmWyXQFyNSeWqZQxnP26om5q5nTM=";
     };
   };
 
