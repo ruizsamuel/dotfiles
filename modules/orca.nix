@@ -41,6 +41,26 @@ let
       ${orca}/bin/orca serve --port ${toString cfg.port} --pairing-address "$addr"
   '';
 
+  # Orca keeps its whole state — repos, worktrees, sessions — in one mutable
+  # orca-data.json per profile, so the file cannot be a Nix store symlink. The
+  # next best thing is to re-assert the settings we care about on every start,
+  # while the runtime is down and cannot race us. Writing through `cat` instead
+  # of renaming the temp file keeps the original inode and mode.
+  settingsPatch = pkgs.writeShellScript "orca-settings-patch" ''
+    set -eu
+
+    file="$HOME/.config/orca/profiles/local-default/orca-data.json"
+    # Absent before Orca's first run; it will start from its own defaults and
+    # the next restart applies these.
+    [ -f "$file" ] || exit 0
+
+    tmp=$(${pkgs.coreutils}/bin/mktemp)
+    ${pkgs.jq}/bin/jq --argjson patch ${lib.escapeShellArg (builtins.toJSON cfg.settings)} \
+      '.settings = (.settings // {}) * $patch' "$file" >"$tmp"
+    ${pkgs.coreutils}/bin/cat "$tmp" >"$file"
+    ${pkgs.coreutils}/bin/rm -f "$tmp"
+  '';
+
   # What the advertised endpoint should look like. Mirrors Orca's own
   # resolution: an address containing "://" is taken verbatim, a bare host keeps
   # the bound port. Without this the helper would compare a fixed address
@@ -102,6 +122,21 @@ in
       default = 6768;
       description = "Port the headless runtime listens on.";
     };
+    settings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = { };
+      example = {
+        branchPrefix = "none";
+      };
+      description = ''
+        Entries merged into the runtime's `settings` object every time the
+        service starts, overriding whatever the UI last saved. The client app
+        edits its OWN profile, so a preference toggled on the desktop never
+        reaches the machine that actually creates the worktrees — this is where
+        that machine's preferences belong.
+      '';
+    };
+
     pairingAddress = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -114,6 +149,10 @@ in
   };
 
   config = {
+    # `git-username` is Orca's default, which prefixes every worktree branch
+    # with the git user name. Branches here are already namespaced by the task.
+    local.orca.settings.branchPrefix = lib.mkDefault "none";
+
     home.packages = [
       orca
       pairing
@@ -161,7 +200,9 @@ in
         # cgroup: stopping the service does not kill it, and the orphan keeps
         # serving the CLI with the previous generation's environment. The scopes
         # have to be swept by hand on stop and before start.
-        ExecStartPre = "-${pkgs.systemd}/bin/systemctl --user stop app-orca-*.scope";
+        ExecStartPre = [
+          "-${pkgs.systemd}/bin/systemctl --user stop app-orca-*.scope"
+        ] ++ lib.optional (cfg.settings != { }) "${settingsPatch}";
         ExecStopPost = "-${pkgs.systemd}/bin/systemctl --user stop app-orca-*.scope";
       };
       Install.WantedBy = [ "default.target" ];
