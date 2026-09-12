@@ -202,7 +202,8 @@ in
         # have to be swept by hand on stop and before start.
         ExecStartPre = [
           "-${pkgs.systemd}/bin/systemctl --user stop app-orca-*.scope"
-        ] ++ lib.optional (cfg.settings != { }) "${settingsPatch}";
+        ]
+        ++ lib.optional (cfg.settings != { }) "${settingsPatch}";
         ExecStopPost = "-${pkgs.systemd}/bin/systemctl --user stop app-orca-*.scope";
       };
       Install.WantedBy = [ "default.target" ];
