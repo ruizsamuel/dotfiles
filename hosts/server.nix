@@ -13,8 +13,9 @@
     ../modules/orca.nix
   ];
 
-  # nginx terminates TLS for this subdomain and proxies to the port the runtime
-  # listens on. An address containing "://" is embedded in the pairing code
-  # verbatim: no port is appended, so clients get exactly this.
-  local.orca.pairingAddress = "wss://server:6768";
+  # Reached over the tailnet by its MagicDNS name. The runtime speaks plain ws
+  # (TLS is WireGuard's job here), so a bare host is enough: it is advertised
+  # as ws://server:<port>. "wss://" would make clients attempt a TLS handshake
+  # the runtime never answers.
+  local.orca.pairingAddress = "server";
 }
